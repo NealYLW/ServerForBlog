@@ -355,7 +355,56 @@ app.get('/users/:userId/videos', (req, res) => {
     });
   });
 });
+// fetch a single video for a user
+app.get('/users/:userId/videos/:videoId', (req, res) => {
+  const userId = req.params.userId;
+  const videoId = req.params.videoId;
+  pool.getConnection((err, connection) => {
+    if (err) {
+      console.error("An error occurred when connecting to the DB: " + err.stack);
+      return res.status(500).json({ message: 'Database connection failed'});
+    }
 
+    connection.query('SELECT * FROM videos WHERE id = ? AND user_id = ?', [videoId, userId], (error, results) => {
+      connection.release();
+      if (error) {
+        console.error('Failed to fetch video:', error);
+        return res.status(500).json({ message: 'Failed to fetch video' });
+      }
+
+      if (results.length > 0) {
+        const video = results[0];
+        return res.json({ data: video });
+      } else {
+        return res.status(404).json({ message: 'Video not found' });
+      }
+    });
+  });
+});
+
+//Delete a video
+app.delete('/users/:userId/videos/:videoId', (req, res) => {
+  const userId = req.params.userId;
+  const videoId = req.params.videoId;
+
+  pool.getConnection((err, connection) => {
+    if(err) {
+      console.error("An error occurred when connecting to the DB: " + err.stack);
+      return res.status(500).json({message: 'Database connection failed'});
+    }
+
+    // Delete the video from the database. This will depend on your database schema.
+    connection.query('DELETE FROM videos WHERE id = ? AND user_id = ?', [videoId, userId], (error, results) => {
+      connection.release();
+      if (error) {
+        console.error('Failed to delete video:', error);
+        return res.status(500).json({ message: 'Failed to delete video' });
+      }
+
+      return res.json({ message: 'Video deleted successfully' });
+    });
+  });
+});
 
 
 app.listen(port, () => {
