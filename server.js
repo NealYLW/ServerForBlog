@@ -77,7 +77,7 @@ app.post('/login', (req, res) => {
         const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET);
 
         // Send the JWT in the response
-        res.json({ message: 'Logged in', token });
+        res.json({ message: 'Logged in', token, userId: user.id });
 
         // release the connection back to the pool when you're done with it
         connection.release();
@@ -405,7 +405,13 @@ app.delete('/users/:userId/videos/:videoId', (req, res) => {
     });
   });
 });
+//Logout
+app.post('/logout', (req, res) => {
+  const token = req.body.token;
 
+  // Add the token to the blacklist
+  res.json({ message: 'Logged out successfully' });
+});
 
 app.listen(port, () => {
   console.log(`Example app listening at http://localhost:${port}`);
